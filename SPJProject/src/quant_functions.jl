@@ -16,6 +16,7 @@ function calculate_shared_scale(row::AbstractArray{Float32})::Float64
 end
 
 function quantize_to_element_format(value::Float32, scale::Float64)::Int8
+    value = Float32(value / scale)
     if isnan(scale) || abs(value*2^6) > typemax(Float32)
         return Int8(0)  # Handle special cases
     else
@@ -45,7 +46,6 @@ function convert_to_quant_matrix(matrix::Matrix{Float32})#::QuantMatrix{Int8}
             end
 
             Vi = matrix[row, col]
-            Vi = Float32(Vi / shared_scale)
             pi = quantize_to_element_format(Vi, shared_scale)
             push!(Pᵢ, pi)
 
@@ -65,7 +65,7 @@ function convert_to_quant_matrix(matrix::Matrix{Float32})#::QuantMatrix{Int8}
         println(Pᵢ)
         println(Vᵢ)
         # println(chunks)
-        println("------------------------")
+        println("-----------------------------------------------------------------------------------------------------------")
     end
     
     # return QuantMatrix(hcat([chunk for chunk in chunks]...), size(matrix))
