@@ -3,6 +3,8 @@ module SPJProject
 include("quant_types.jl")
 include("quant_functions.jl")
 
+export convert_to_quant_matrix
+
 using Random
 
 function initialize_weights(rows, cols, scale=Float32(0.01))
@@ -13,7 +15,8 @@ end
 weights = initialize_weights(5, 5)
 
 # Convert matrix to QuantMatrix
-quant_matrix = convert_to_quant_matrix(weights)
+quant_matrix, dequant_matrix = convert_to_quant_matrix(weights) 
+print(isapprox(dequant_matrix, weights, atol=1e-3, rtol=1e-3))
 
 # Display the original and quantized matrices
 # println("Original Matrix:")
