@@ -53,8 +53,36 @@ function convert_to_quant_matrix(matrix::Matrix{Float32})
     return quantized, dequantized
 end
 
-# IDEA: Maybe have this function (above) just return two matrices (regular) quantized and dequantized
-# Then have new function to make matrix of type QuantMatrix from this matrix with quantized values
-# It is easier, then to write tests and check if after dequantization values are approximately the same
-# That is have one function do quantization and other one assemble QuantMatrix
-# It is more readable, robust and easier to test
+function pack(a::Int, b::Int)
+    @assert -127 <= a <= 127 "a must be between -127 and 127 (provided: $a)"
+    @assert -127 <= b <= 127 "b must be between -127 and 127 (provided: $b)"
+    return UInt16((a << 8) + b)
+end
+
+origin_col_idx(j, i, NBLOCKS, BLOCKSIZE=32) = (mod1(i, NBLOCKS) - 1) * BLOCKSIZE + j
+origin_row_idx(i, NBLOCKS) = fld1(i, NBLOCKS)
+
+function pack(m::Matrix{Int64}, BLOCKSIZE=32)
+    HALFBLOCK = BLOCKSIZE ÷ 2 # 16
+    mat_size = size(m)
+    NCOLS = mat_size[2]
+    NBLOCKS = NCOLS ÷ BLOCKSIZE
+    qm = Matrix{UInt16}(undef, NBLOCKS * mat_size[1], BLOCKSIZE ÷ 2)
+    for i in axes(qm, 1)
+            row_idx = origin_row_idx(i, NBLOCKS)
+        for j in axes(qm, 2)
+            col_idx = origin_col_idx(j, i, NBLOCKS)
+            if m[row_idx, col_idx] < 0
+                m[row_idx, col_idx] *= -1
+            end
+            if m[row_idx, col_idx+HALFBLOCK] < 0
+                m[row_idx, col_idx+HALFBLOCK] *= -1
+            end
+            qm[i, j] = pack(m[row_idx, col_idx], m[row_idx, col_idx+HALFBLOCK])
+        end
+    end
+    return qm
+end
+
+# TODO: 1. Deal with negative values
+#       2. Deal with situations when parts of matrix should be filled with 0 (size not div by 32 or BLOCKSIZE or smaller than BLOCKSIZE)
