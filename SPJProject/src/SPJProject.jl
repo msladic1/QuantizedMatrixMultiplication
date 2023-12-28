@@ -15,10 +15,12 @@ end
 weights = initialize_weights(64, 128)
 
 # Convert matrix to QuantMatrix
-quant_matrix, dequant_matrix = convert_to_quant_matrix(weights) 
-print(isapprox(dequant_matrix, weights, atol=1e-1, rtol=1e-1))
+quant_matrix, scales = convert_to_quant_matrix(weights) 
+# print(isapprox(dequant_matrix, weights, atol=1e-1, rtol=1e-1))
 
 quant_matrix
+scales
+
 qm, sgns = pack(quant_matrix, 32)  
 
 qm

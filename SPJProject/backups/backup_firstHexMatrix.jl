@@ -26,15 +26,13 @@ end
 
 function convert_to_quant_matrix(matrix::Matrix{Float32})
     quantized = zeros(Int, size(matrix, 1), size(matrix, 2))
-    # dequantized = zeros(Float32, size(matrix, 1), size(matrix, 2))
-    scales = zeros(Float64, size(matrix, 1))
+    dequantized = zeros(Float32, size(matrix, 1), size(matrix, 2))
 
     for row in 1:size(matrix, 1)
         Pᵢ = []
         Vᵢ = []
 
         shared_scale = calculate_shared_scale(matrix[row, :])
-        scales[row] = shared_scale
 
         for col in 1:size(matrix, 2)
 
@@ -42,17 +40,17 @@ function convert_to_quant_matrix(matrix::Matrix{Float32})
             pi = quantize_to_element_format(Vi, shared_scale)
             push!(Pᵢ, pi)
 
-            # vᵢ = isnan(shared_scale) || abs(shared_scale * pi) > typemax(Float32) ? NaN : clamp((pi / 2^6), typemin(Int8), typemax(Int8)) * shared_scale
-            # push!(Vᵢ, vᵢ)
+            vᵢ = isnan(shared_scale) || abs(shared_scale * pi) > typemax(Float32) ? NaN : clamp((pi / 2^6), typemin(Int8), typemax(Int8)) * shared_scale
+            push!(Vᵢ, vᵢ)
 
         end
 
         quantized[row, :] = Pᵢ
-        # dequantized[row, :] =  Vᵢ
+        dequantized[row, :] =  Vᵢ
 
     end
 
-    return quantized, scales
+    return quantized, dequantized
 end
 
 function pack(a::Int, b::Int)
