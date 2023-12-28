@@ -1,12 +1,12 @@
 # Types Definition
 
 struct Chunk{T,N}
-    values::Vector{T}
+    values::T
     scale::Float64
-    minimum::Float64
+    signs::Pair{Int, Int}
 end
 
 struct QuantMatrix{T} <: AbstractMatrix{T}
     matrix::Matrix{Chunk{T}}
-    dim::Tuple{Int, Int}
+    dim::Pair{Int, Int}
 end

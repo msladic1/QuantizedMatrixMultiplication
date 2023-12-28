@@ -82,7 +82,7 @@ function pack(m::Matrix{Int64}, BLOCKSIZE=32)
             first_val = m[row_idx, col_idx]
             second_val = m[row_idx, col_idx+HALFBLOCK]
 
-            ########## Refactor this part ##########
+            ########### Refactor this part ###########
             if m[row_idx, col_idx] < 0
                 first_val *= -1
                 first_sgn = 0
@@ -91,7 +91,7 @@ function pack(m::Matrix{Int64}, BLOCKSIZE=32)
                 second_val *= -1
                 second_sgn = 0
             end
-            ########################################
+            ##########################################
 
             qm[i, j] = pack(first_val, second_val)
             sgns[i, j] = pack(first_sgn, second_sgn)
@@ -103,3 +103,7 @@ end
 
 # TODO: 1. Deal with negative values - DONE (made new matrices that saves in respective places of elements 0 if they are negative and 2 if they are positive)
 #       2. Deal with situations when parts of matrix should be filled with 0 (size not div by 32 or BLOCKSIZE or smaller than BLOCKSIZE)
+
+# TODO: Reorganization of noticable size is needed. Basically in quant function a vector of shared_scales by row should also be created
+#       When this hex matrix is created it should consist of Chunks. Struct Chunk should have this value which consists of two UInt8 representations
+#       of quantized values and a value which is scale used to quantize values in the row that value is from.
