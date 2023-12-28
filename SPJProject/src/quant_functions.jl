@@ -26,7 +26,6 @@ end
 
 function convert_to_quant_matrix(matrix::Matrix{Float32})
     quantized = zeros(Int, size(matrix, 1), size(matrix, 2))
-    # dequantized = zeros(Float32, size(matrix, 1), size(matrix, 2))
     scales = zeros(Float64, size(matrix, 1))
 
     for row in 1:size(matrix, 1)
@@ -42,14 +41,9 @@ function convert_to_quant_matrix(matrix::Matrix{Float32})
             pi = quantize_to_element_format(Vi, shared_scale)
             push!(Pᵢ, pi)
 
-            # vᵢ = isnan(shared_scale) || abs(shared_scale * pi) > typemax(Float32) ? NaN : clamp((pi / 2^6), typemin(Int8), typemax(Int8)) * shared_scale
-            # push!(Vᵢ, vᵢ)
-
         end
 
         quantized[row, :] = Pᵢ
-        # dequantized[row, :] =  Vᵢ
-
     end
 
     return quantized, scales
@@ -64,48 +58,51 @@ end
 origin_col_idx(j, i, NBLOCKS, BLOCKSIZE=32) = (mod1(i, NBLOCKS) - 1) * BLOCKSIZE + j
 origin_row_idx(i, NBLOCKS) = fld1(i, NBLOCKS)
 
-function pack(m::Matrix{Int64}, BLOCKSIZE=32)
+function pack(m::Matrix{Int64}, scales::Vector{Float64}, BLOCKSIZE=32)
     mat_size = size(m)
 
     HALFBLOCK = BLOCKSIZE ÷ 2 # 16
     NCOLS = mat_size[2]
     NBLOCKS = NCOLS ÷ BLOCKSIZE
 
-    qm = Matrix{UInt16}(undef, NBLOCKS * mat_size[1], BLOCKSIZE ÷ 2)
-    sgns = Matrix{UInt16}(undef, NBLOCKS * mat_size[1], BLOCKSIZE ÷ 2)
+    dimension = Pair(NBLOCKS * mat_size[1], BLOCKSIZE ÷ 2)
+
+    qm = Matrix{Chunk{UInt16}}(undef, NBLOCKS * mat_size[1], BLOCKSIZE ÷ 2)
 
     for i in axes(qm, 1)
             row_idx = origin_row_idx(i, NBLOCKS)
         for j in axes(qm, 2)
             col_idx = origin_col_idx(j, i, NBLOCKS)
 
-            first_sgn = 2
-            second_sgn = 2
+            first_sgn = 1
+            second_sgn = 1
             first_val = m[row_idx, col_idx]
             second_val = m[row_idx, col_idx+HALFBLOCK]
 
             ########### Refactor this part ###########
             if m[row_idx, col_idx] < 0
                 first_val *= -1
-                first_sgn = 0
+                first_sgn = -1
             end
             if m[row_idx, col_idx+HALFBLOCK] < 0
                 second_val *= -1
-                second_sgn = 0
+                second_sgn = -1
             end
             ##########################################
 
-            qm[i, j] = pack(first_val, second_val)
-            sgns[i, j] = pack(first_sgn, second_sgn)
+            chunk = Chunk{UInt16}(pack(first_val, second_val), scales[row_idx], Pair(first_sgn, second_sgn))  
+
+            qm[i, j] = chunk
         end
     end
 
-    return qm, sgns
-end
+    fully_quantized_matrix = QuantMatrix{UInt16}(qm, dimension)
 
-# TODO: 1. Deal with negative values - DONE (made new matrices that saves in respective places of elements 0 if they are negative and 2 if they are positive)
-#       2. Deal with situations when parts of matrix should be filled with 0 (size not div by 32 or BLOCKSIZE or smaller than BLOCKSIZE)
+    return fully_quantized_matrix
+end
 
 # TODO: Reorganization of noticable size is needed. Basically in quant function a vector of shared_scales by row should also be created
 #       When this hex matrix is created it should consist of Chunks. Struct Chunk should have this value which consists of two UInt8 representations
 #       of quantized values and a value which is scale used to quantize values in the row that value is from.
+#       ---------------------------------------------------------------------------------------------------------------------------------------------
+#       Item 1: In pack function create chunks and matrix of chunks.

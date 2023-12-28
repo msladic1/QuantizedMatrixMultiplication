@@ -21,10 +21,9 @@ quant_matrix, scales = convert_to_quant_matrix(weights)
 quant_matrix
 scales
 
-qm, sgns = pack(quant_matrix, 32)  
+qm = pack(quant_matrix, scales, 32)
 
 qm
-sgns
 
 # Display the original and quantized matrices
 # println("Original Matrix:")
