@@ -23,7 +23,7 @@ scales
 
 qm = pack(quant_matrix, scales, 32)
 
-qm
+qm.matrix[1,1].signs
 
 # Display the original and quantized matrices
 # println("Original Matrix:")

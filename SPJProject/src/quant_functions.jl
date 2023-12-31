@@ -15,13 +15,19 @@ function calculate_shared_scale(row::AbstractArray{Float32})::Float64
     return 2^shared_exp
 end
 
-function quantize_to_element_format(value::Float32, scale::Float64)::Int8
-    value = Float32(value / scale)
-    if isnan(scale) || abs(value*2^6) > typemax(Float32)
-        return Int8(0)  # Handle special cases
-    else
-        clamp(round(value*2^6), typemin(Int8), typemax(Int8))
+function quantize_to_element_format(values::Vector{Float32}, scale::Float64)::Vector{Int8}
+    result = Int8[]
+    
+    for value in values
+        scaled_value = Float32(value / scale)
+        if isnan(scale) || abs(scaled_value * 2^6) > typemax(Float32)
+            push!(result, Int8(0))  # Handle special cases
+        else
+            push!(result, clamp(round(scaled_value * 2^6), typemin(Int8), typemax(Int8)))
+        end
     end
+    
+    return result
 end
 
 function convert_to_quant_matrix(matrix::Matrix{Float32})
@@ -29,18 +35,11 @@ function convert_to_quant_matrix(matrix::Matrix{Float32})
     scales = zeros(Float64, size(matrix, 1))
 
     for row in 1:size(matrix, 1)
-        Pᵢ = []
 
         shared_scale = calculate_shared_scale(matrix[row, :])
         scales[row] = shared_scale
 
-        for col in 1:size(matrix, 2)
-
-            Vi = matrix[row, col]
-            pi = quantize_to_element_format(Vi, shared_scale)
-            push!(Pᵢ, pi)
-
-        end
+        Pᵢ = quantize_to_element_format(matrix[row, :], shared_scale)
 
         quantized[row, :] = Pᵢ
     end
@@ -49,8 +48,6 @@ function convert_to_quant_matrix(matrix::Matrix{Float32})
 end
 
 function pack(a::Int, b::Int)
-    # @assert -127 <= a <= 127 "a must be between -127 and 127 (provided: $a)"
-    # @assert -127 <= b <= 127 "b must be between -127 and 127 (provided: $b)"
     return UInt16((a << 8) + b)
 end
 
