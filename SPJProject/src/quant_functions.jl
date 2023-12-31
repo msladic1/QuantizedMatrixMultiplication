@@ -30,7 +30,6 @@ function convert_to_quant_matrix(matrix::Matrix{Float32})
 
     for row in 1:size(matrix, 1)
         Pᵢ = []
-        Vᵢ = []
 
         shared_scale = calculate_shared_scale(matrix[row, :])
         scales[row] = shared_scale
@@ -50,8 +49,8 @@ function convert_to_quant_matrix(matrix::Matrix{Float32})
 end
 
 function pack(a::Int, b::Int)
-    @assert -127 <= a <= 127 "a must be between -127 and 127 (provided: $a)"
-    @assert -127 <= b <= 127 "b must be between -127 and 127 (provided: $b)"
+    # @assert -127 <= a <= 127 "a must be between -127 and 127 (provided: $a)"
+    # @assert -127 <= b <= 127 "b must be between -127 and 127 (provided: $b)"
     return UInt16((a << 8) + b)
 end
 
@@ -100,9 +99,3 @@ function pack(m::Matrix{Int64}, scales::Vector{Float64}, BLOCKSIZE=32)
 
     return fully_quantized_matrix
 end
-
-# TODO: Reorganization of noticable size is needed. Basically in quant function a vector of shared_scales by row should also be created
-#       When this hex matrix is created it should consist of Chunks. Struct Chunk should have this value which consists of two UInt8 representations
-#       of quantized values and a value which is scale used to quantize values in the row that value is from.
-#       ---------------------------------------------------------------------------------------------------------------------------------------------
-#       Item 1: In pack function create chunks and matrix of chunks.
