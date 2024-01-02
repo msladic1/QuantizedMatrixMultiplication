@@ -10,14 +10,14 @@ function calculate_shared_scale(row::AbstractArray{Float32})::Float64
 
     emax = emaxelem^floor(log2(maximum(abs.(row))))
 
-    shared_exp = shared_exp - emax
+    # shared_exp = shared_exp - emax
     
     return 2^shared_exp
 end
 
 function quantize_to_element_format(values::Vector{Float32}, scale::Float64)::Vector{Int8}
     result = Int8[]
-    
+
     for value in values
         scaled_value = Float32(value / scale)
         if isnan(scale) || abs(scaled_value * 2^6) > typemax(Float32)
@@ -57,9 +57,9 @@ origin_row_idx(i, NBLOCKS) = fld1(i, NBLOCKS)
 function pack(m::Matrix{Int64}, scales::Vector{Float64}, BLOCKSIZE=32)
     mat_size = size(m)
 
-    HALFBLOCK = BLOCKSIZE ÷ 2 # 16
+    HALFBLOCK = BLOCKSIZE ÷ 2 
     NCOLS = mat_size[2]
-    NBLOCKS = NCOLS ÷ BLOCKSIZE
+    NBLOCKS = NCOLS ÷ BLOCKSIZE # TODO: Round it to higher number and pad extra spaces with 0x0000
 
     dimension = Pair(NBLOCKS * mat_size[1], BLOCKSIZE ÷ 2)
 
@@ -68,7 +68,7 @@ function pack(m::Matrix{Int64}, scales::Vector{Float64}, BLOCKSIZE=32)
     for i in axes(qm, 1)
             row_idx = origin_row_idx(i, NBLOCKS)
         for j in axes(qm, 2)
-            col_idx = origin_col_idx(j, i, NBLOCKS)
+            col_idx = origin_col_idx(j, i, NBLOCKS, BLOCKSIZE)
 
             first_sgn = 1
             second_sgn = 1

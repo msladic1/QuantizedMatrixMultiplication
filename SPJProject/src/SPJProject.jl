@@ -2,6 +2,7 @@ module SPJProject
 
 include("quant_types.jl")
 include("quant_functions.jl")
+include("multiplication.jl")
 
 export convert_to_quant_matrix
 
@@ -12,22 +13,37 @@ function initialize_weights(rows, cols, scale=Float32(0.01))
 end
 
 # Initialize a 3x3 matrix of weights with a small random normal distribution
-weights = initialize_weights(64, 128)
+weights = initialize_weights(6, 12)
 
-# Convert matrix to QuantMatrix
+# Quantize matrix values
 quant_matrix, scales = convert_to_quant_matrix(weights) 
 # print(isapprox(dequant_matrix, weights, atol=1e-1, rtol=1e-1))
 
 quant_matrix
 scales
 
+# Get QuantMatrix
+qm = pack(quant_matrix, scales, 6)
+
+qm.matrix[1,1].signs[2]
+
+mat2_size = (128, 64)
+m = initialize_weights(64, 128)
+v = rand(0:20, mat2_size) .|> Float32
+
+quant_matrix, scales = convert_to_quant_matrix(m) 
+
+m
+quant_matrix
+v
+scales
+
 qm = pack(quant_matrix, scales, 32)
 
-qm.matrix[1,1].signs
+qm
+m * v
+res = mul(qm, v, 32)
+res
+quant_matrix * v
 
-# Display the original and quantized matrices
-# println("Original Matrix:")
-# println(example_matrix)
-# println("\nQuantized Matrix:")
-# println(quant_matrix.matrix)
 end
