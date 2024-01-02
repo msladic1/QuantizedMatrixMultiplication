@@ -26,6 +26,7 @@ scales
 qm = pack(quant_matrix, scales, 6)
 
 qm.matrix[1,1].signs[2]
+qm.blocksize
 
 mat2_size = (128, 64)
 m = initialize_weights(64, 128)
@@ -41,9 +42,7 @@ scales
 qm = pack(quant_matrix, scales, 32)
 
 qm
-m * v
-res = mul(qm, v, 32)
-res
-quant_matrix * v
+m * v # regular multiplication
+qm * v # my multiplication
 
 end

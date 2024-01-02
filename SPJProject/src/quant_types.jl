@@ -9,6 +9,7 @@ end
 struct QuantMatrix{T} <: AbstractMatrix{T}
     matrix::Matrix{Chunk{T}}
     dim::Pair{Int, Int}
+    blocksize::Int
 end
 
 function Base.display(chunk::Chunk{T}) where T

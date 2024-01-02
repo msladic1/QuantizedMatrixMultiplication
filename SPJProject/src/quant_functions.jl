@@ -92,7 +92,7 @@ function pack(m::Matrix{Int64}, scales::Vector{Float64}, BLOCKSIZE=32)
         end
     end
 
-    fully_quantized_matrix = QuantMatrix{UInt16}(qm, dimension)
+    fully_quantized_matrix = QuantMatrix{UInt16}(qm, dimension, BLOCKSIZE)
 
     return fully_quantized_matrix
 end
