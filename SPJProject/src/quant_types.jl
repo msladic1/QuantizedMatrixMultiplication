@@ -19,8 +19,8 @@ function Base.display(chunk::Chunk{T}) where T
 end
 
 function Base.display(qm::QuantMatrix{T}) where T
-    for i in 1:Int(qm.dim[1])
-        for j in 1:Int(qm.dim[2])
+    for i in 1:5
+        for j in 1:Int(qm.blocksize/2)
             hex_str = string(qm.matrix[i, j].values, base=16)
             print("0x$(lpad(hex_str, 4, '0'))")
             print("\t")

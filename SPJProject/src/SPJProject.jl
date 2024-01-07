@@ -1,4 +1,4 @@
-module SPJProject  
+module SPJProject
 
 include("quant_types.jl")
 include("quant_functions.jl")
@@ -25,12 +25,19 @@ scales
 # Get QuantMatrix
 qm = pack(quant_matrix, scales, 6)
 
+mat2_size = (12, 6)
+v = rand(0:20, mat2_size) .|> Float32
+
+qm * v
+weights * v
+
 qm.matrix[1,1].signs[2]
 qm.blocksize
 
 mat2_size = (128, 64)
 m = initialize_weights(64, 128)
 v = rand(0:20, mat2_size) .|> Float32
+v = initialize_weights(128, 64)
 
 quant_matrix, scales = convert_to_quant_matrix(m) 
 
@@ -42,7 +49,9 @@ scales
 qm = pack(quant_matrix, scales, 32)
 
 qm
-m * v # regular multiplication
-qm * v # my multiplication
+reg = m * v # regular multiplication
+my = qm * v # my multiplication
 
+sum(m*v)
+sum(qm*v)
 end
