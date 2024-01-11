@@ -46,7 +46,7 @@ quant_matrix
 v
 scales
 
-qm = pack(quant_matrix, scales, 32)
+qm = pack(quant_matrix, scales, 16)
 
 qm
 reg = m * v # regular multiplication

@@ -1,8 +1,6 @@
 include("quant_types.jl")
 include("quant_functions.jl")
 
-using LoopVectorization
-
 function Base.:*(Q::QuantMatrix{UInt16}, A::Matrix{T}) where T
     BLOCKSIZE = Q.blocksize
     NBLOCKS = size(A, 1) ÷ BLOCKSIZE
