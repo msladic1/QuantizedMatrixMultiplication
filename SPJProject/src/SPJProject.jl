@@ -5,6 +5,9 @@ include("quant_functions.jl")
 include("multiplication.jl")
 
 export convert_to_quant_matrix
+export pack
+export QuantMatrix
+export Chunk
 
 using Random
 

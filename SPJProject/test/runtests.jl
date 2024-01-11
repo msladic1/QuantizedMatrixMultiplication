@@ -17,7 +17,7 @@ weights = initialize_weights(5, 5)
 end
 
 @testset "Check if quantized values are in valid range" begin
-    q, d = convert_to_quant_matrix(weights)
+    q, d = convert_to_quant_matrix(weights) 
     weights2 = initialize_weights(100, 100)
     q2, d2 = convert_to_quant_matrix(weights2)
     @test maximum(q) <= 127 && minimum(q) >= -127
@@ -36,3 +36,21 @@ end
     @test packed.matrix[1, 1].values & 0xFF * packed.matrix[1, 1].signs[2] == q[1, 17]
 end
 
+@testset "Multiplication tests" begin
+    weights = initialize_weights(12, 24)
+    q, d = convert_to_quant_matrix(weights)
+    BLOCKSIZE = 6
+    mat2_size = (24, 12)
+    v = rand(0:20, mat2_size) .|> Float32
+    packed = pack(q, d, BLOCKSIZE)
+    product = packed * v
+    real = weights * v
+    @test size(product, 1) == 12 && size(product, 2) == 12
+    @test sum(real) - sum(product) <= 0.2
+    @test product[2, 4] - real[2, 4] <= 0.01
+    for i ∈ axes(product, 1)
+        for j ∈ axes(product, 2)
+            @test product[i, j] - real[i, j] <= 0.01
+        end
+    end
+end
