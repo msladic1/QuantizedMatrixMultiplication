@@ -3,21 +3,26 @@ include("quant_functions.jl")
 
 function Base.:*(Q::QuantMatrix{UInt16}, A::Matrix{T}) where T
     BLOCKSIZE = Q.blocksize
+    BLOCKSIZE2 = Int(BLOCKSIZE/2)
     NBLOCKS = size(A, 1) ÷ BLOCKSIZE
     C = zeros(Float32, size(A, 2) , size(A, 2))
 
-    for i ∈ axes(Q, 1)
-        for j ∈ axes(A, 2)
+    axes_q2 = axes(Q, 2)
+    axes_a2 = axes(A, 2)
+    @inbounds for i ∈ axes(Q, 1)
+        for j ∈ axes_a2
             Cx = zero(eltype(C))
-
+            or = origin_row_idx(i, NBLOCKS)
             shared_scale = Q.matrix[i, 1].scale
 
-            for k ∈ axes(Q, 2)
-                Cx += Float32(Q.matrix[i, k].values >> 8) * A[origin_col_idx(k, i, NBLOCKS, BLOCKSIZE), j] * Float32(Q.matrix[i, k].signs[1]) 
-                Cx += Float32(Q.matrix[i, k].values & 0xFF) * A[origin_col_idx(k, i, NBLOCKS, BLOCKSIZE)+Int(BLOCKSIZE/2), j] * Float32(Q.matrix[i, k].signs[2])
+            for k ∈ axes_q2
+                v = Q.matrix[i, k].values
+                oi = origin_col_idx(k, i, NBLOCKS, BLOCKSIZE)
+                Cx += (v >> 8) * A[oi, j] * Float32(Q.matrix[i, k].signs[1]) 
+                Cx += (v & 0xFF) * A[oi + BLOCKSIZE2, j] * Float32(Q.matrix[i, k].signs[2])
             end
 
-            C[origin_row_idx(i, NBLOCKS), j] += clamp(Float32(Cx / 2^6), typemin(Int8), typemax(Int8)) * Float32(shared_scale)
+            C[or, j] += Cx / 2^6 * Float32(shared_scale)
         end
     end
 

@@ -2,8 +2,8 @@
 
 struct Chunk{T}
     values::T
-    scale::Float64
-    signs::Pair{Int, Int}
+    scale::Float64 # F generalize it
+    signs::Pair{Int, Int} # Store as one byte
 end
 
 struct QuantMatrix{T} <: AbstractMatrix{T}
