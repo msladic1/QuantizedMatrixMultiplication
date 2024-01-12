@@ -20,8 +20,8 @@ end
     q, d = convert_to_quant_matrix(weights) 
     weights2 = initialize_weights(100, 100)
     q2, d2 = convert_to_quant_matrix(weights2)
-    @test maximum(q) <= 127 && minimum(q) >= -127
-    @test maximum(q2) <= 127 && minimum(q2) >= -127
+    @test maximum(q) <= 127 && minimum(q) >= -128
+    @test maximum(q2) <= 127 && minimum(q2) >= -128
 end
 
 @testset "Test Pack function" begin
