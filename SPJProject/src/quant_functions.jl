@@ -32,7 +32,7 @@ end
 
 function convert_to_quant_matrix(matrix::Matrix{Float32})
     quantized = zeros(Int, size(matrix, 1), size(matrix, 2))
-    scales = zeros(Float64, size(matrix, 1))
+    scales = zeros(Float32, size(matrix, 1))
 
     for row in 1:size(matrix, 1)
 
@@ -54,7 +54,7 @@ end
 origin_col_idx(j, i, NBLOCKS, BLOCKSIZE=32) = (mod1(i, NBLOCKS) - 1) * BLOCKSIZE + j
 origin_row_idx(i, NBLOCKS) = fld1(i, NBLOCKS)
 
-function pack(m::Matrix{Int64}, scales::Vector{Float64}, BLOCKSIZE=32)
+function pack(m::Matrix{Int}, scales::Vector{Float32}, BLOCKSIZE=32)
     mat_size = size(m)
 
     HALFBLOCK = BLOCKSIZE ÷ 2 
@@ -78,21 +78,21 @@ function pack(m::Matrix{Int64}, scales::Vector{Float64}, BLOCKSIZE=32)
             ########### Refactor this part ###########
             if m[row_idx, col_idx] < 0
                 first_val *= -1
-                first_sgn = -1
+                first_sgn = Int8(-1)
             end
             if m[row_idx, col_idx+HALFBLOCK] < 0
                 second_val *= -1
-                second_sgn = -1
+                second_sgn = Int8(-1)
             end
             ##########################################
 
-            chunk = Chunk{UInt16}(pack(first_val, second_val), scales[row_idx], Pair(first_sgn, second_sgn))  
+            chunk = Chunk{UInt16, Float32}(pack(first_val, second_val), Float32(scales[row_idx]), Pair(first_sgn, second_sgn))  
 
             qm[i, j] = chunk
         end
     end
 
-    fully_quantized_matrix = QuantMatrix{UInt16}(qm, dimension, BLOCKSIZE)
+    fully_quantized_matrix = QuantMatrix{UInt16, Float32}(qm, dimension, BLOCKSIZE)
 
     return fully_quantized_matrix
 end

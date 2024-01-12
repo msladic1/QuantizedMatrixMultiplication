@@ -13,7 +13,7 @@ end
 mat2_size = (128, 64)
 m = initialize_weights(64, 128)
 v = rand(0:20, mat2_size) .|> Float32
-v = initialize_weights(128, 64)
+# v = initialize_weights(128, 64)
 
 quant_matrix, scales = convert_to_quant_matrix(m) 
 
@@ -25,6 +25,7 @@ my = qm * v # my multiplication
 @code_warntype qm * v
 
 @benchmark qm * v
+@benchmark m * v
 
 function run_multi(a, b, n)
     for _ in 1:n

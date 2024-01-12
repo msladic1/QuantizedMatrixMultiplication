@@ -1,7 +1,7 @@
 include("quant_types.jl")
 include("quant_functions.jl")
 
-function Base.:*(Q::QuantMatrix{UInt16}, A::Matrix{T}) where T
+function Base.:*(Q::QuantMatrix{UInt16, Float32}, A::Matrix{T}) where T
     BLOCKSIZE = Q.blocksize
     BLOCKSIZE2 = Int(BLOCKSIZE/2)
     NBLOCKS = size(A, 1) ÷ BLOCKSIZE
@@ -17,12 +17,13 @@ function Base.:*(Q::QuantMatrix{UInt16}, A::Matrix{T}) where T
 
             for k ∈ axes_q2
                 v = Q.matrix[i, k].values
+                row = Q.matrix[i, k]
                 oi = origin_col_idx(k, i, NBLOCKS, BLOCKSIZE)
-                Cx += (v >> 8) * A[oi, j] * Float32(Q.matrix[i, k].signs[1]) 
-                Cx += (v & 0xFF) * A[oi + BLOCKSIZE2, j] * Float32(Q.matrix[i, k].signs[2])
+                Cx += (v >> 8) * A[oi, j] * row.signs[1]
+                Cx += (v & 0xFF) * A[oi + BLOCKSIZE2, j] * row.signs[2]
             end
 
-            C[or, j] += Cx / 2^6 * Float32(shared_scale)
+            C[or, j] += Cx / 2^6 * shared_scale
         end
     end
 
