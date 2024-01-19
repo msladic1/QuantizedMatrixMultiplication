@@ -8,7 +8,7 @@ end
 
 struct QuantMatrix{T, F} <: AbstractMatrix{T}
     matrix::Matrix{Chunk{T,F}}
-    dim::Pair{Int8, Int8}
+    dim::Pair{Int, Int}
     blocksize::Int8
 end
 
