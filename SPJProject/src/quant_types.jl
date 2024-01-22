@@ -1,7 +1,7 @@
 # Types Definition
 
 struct Chunk{T, F}
-    values::Tuple{T}  
+    values::Tuple{T,T,T,T}  
     scale::F 
     signs::BitArray 
 end

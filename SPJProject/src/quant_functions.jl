@@ -59,7 +59,7 @@ function pack(m::Matrix{Int}, scales::Vector{Float32}, BLOCKSIZE=4)
 
     dimension = Pair(mat_size[1], Int(ceil(mat_size[2] / BLOCKSIZE)))
 
-    qm = Matrix{Chunk{Vector{Int8}}}(undef, mat_size[1], Int(ceil(mat_size[2] / BLOCKSIZE)))
+    qm = Matrix{Chunk{Int8}}(undef, mat_size[1], Int(ceil(mat_size[2] / BLOCKSIZE)))
 
     for i in axes(qm, 1)
         for j in 1:4:mat_size[2]
@@ -68,17 +68,17 @@ function pack(m::Matrix{Int}, scales::Vector{Float32}, BLOCKSIZE=4)
             vals = Int8[m[i, j], (j + 1 <= size(m, 2)) ? m[i, j + 1] : 0, (j + 2 <= size(m, 2)) ? m[i, j + 2] : 0, (j + 3 <= size(m, 2)) ? m[i, j + 3] : 0]
 
             (m[i, j] < 0) && (vals[1] *= -1; signs[1] = 0)
-            (m[i, j + 1] < 0) && (vals[2] *= -1; signs[2] = 0)
-            (m[i, j + 2] < 0) && (vals[3] *= -1; signs[3] = 0)
-            (m[i, j + 3] < 0) && (vals[4] *= -1; signs[4] = 0)
+            (j + 1 <= size(m, 2) && m[i, j + 1] < 0) && (vals[2] *= -1; signs[2] = 0)
+            (j + 2 <= size(m, 2) && m[i, j + 2] < 0) && (vals[3] *= -1; signs[3] = 0)
+            (j + 3 <= size(m, 2) && m[i, j + 3] < 0) && (vals[4] *= -1; signs[4] = 0)
 
-            chunk = Chunk{Vector{Int8}, Float32}(tuple(vals), Float32(scales[i]), signs)  
+            chunk = Chunk{Int8, Float32}(Tuple(Int8(x) for x in vals), Float32(scales[i]), signs)  
 
             qm[i, Int(floor(j/4))+1] = chunk
         end
     end
 
-    fully_quantized_matrix = QuantMatrix{Vector{Int8}, Float32}(qm, dimension, 4)
+    fully_quantized_matrix = QuantMatrix{Int8, Float32}(qm, dimension, 4)
 
     return fully_quantized_matrix
 end

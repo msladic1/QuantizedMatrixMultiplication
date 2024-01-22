@@ -16,7 +16,7 @@ function initialize_weights(rows, cols, scale=Float32(0.01))
 end
 
 # Initialize a 3x3 matrix of weights with a small random normal distribution
-weights = initialize_weights(6, 12)
+weights = initialize_weights(6, 15)
 sizeof(weights)
 # Quantize matrix values
 quant_matrix, scales = convert_to_quant_matrix(weights) 
@@ -53,7 +53,7 @@ quant_matrix
 v
 scales
 
-qm = pack(quant_matrix, scales, 16)
+qm = pack(quant_matrix, scales, 4)
 
 qm
 reg = m * v # regular multiplication
