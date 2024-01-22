@@ -54,45 +54,31 @@ end
 origin_col_idx(j, i, NBLOCKS, BLOCKSIZE=32) = (mod1(i, NBLOCKS) - 1) * BLOCKSIZE + j
 origin_row_idx(i, NBLOCKS) = fld1(i, NBLOCKS)
 
-function pack(m::Matrix{Int}, scales::Vector{Float32}, BLOCKSIZE=32)
+function pack(m::Matrix{Int}, scales::Vector{Float32}, BLOCKSIZE=4)
     mat_size = size(m)
 
-    HALFBLOCK = BLOCKSIZE ÷ 2 
-    NCOLS = mat_size[2]
-    NBLOCKS = NCOLS ÷ BLOCKSIZE # TODO: Round it to higher number and pad extra spaces with 0x0000
+    dimension = Pair(mat_size[1], Int(ceil(mat_size[2] / BLOCKSIZE)))
 
-    dimension = Pair(NBLOCKS * mat_size[1], BLOCKSIZE ÷ 2)
-
-    qm = Matrix{Chunk{UInt16}}(undef, NBLOCKS * mat_size[1], BLOCKSIZE ÷ 2)
+    qm = Matrix{Chunk{Vector{Int8}}}(undef, mat_size[1], Int(ceil(mat_size[2] / BLOCKSIZE)))
 
     for i in axes(qm, 1)
-            row_idx = origin_row_idx(i, NBLOCKS)
-        for j in axes(qm, 2)
-            col_idx = origin_col_idx(j, i, NBLOCKS, BLOCKSIZE)
+        for j in 1:4:mat_size[2]
 
-            first_sgn = 1
-            second_sgn = 1
-            first_val = m[row_idx, col_idx]
-            second_val = m[row_idx, col_idx+HALFBLOCK]
+            signs = BitArray([1, 1, 1, 1])
+            vals = Int8[m[i, j], (j + 1 <= size(m, 2)) ? m[i, j + 1] : 0, (j + 2 <= size(m, 2)) ? m[i, j + 2] : 0, (j + 3 <= size(m, 2)) ? m[i, j + 3] : 0]
 
-            ########### Refactor this part ###########
-            if m[row_idx, col_idx] < 0
-                first_val *= -1
-                first_sgn = Int8(-1)
-            end
-            if m[row_idx, col_idx+HALFBLOCK] < 0
-                second_val *= -1
-                second_sgn = Int8(-1)
-            end
-            ##########################################
+            (m[i, j] < 0) && (vals[1] *= -1; signs[1] = 0)
+            (m[i, j + 1] < 0) && (vals[2] *= -1; signs[2] = 0)
+            (m[i, j + 2] < 0) && (vals[3] *= -1; signs[3] = 0)
+            (m[i, j + 3] < 0) && (vals[4] *= -1; signs[4] = 0)
 
-            chunk = Chunk{UInt16, Float32}(pack(first_val, second_val), Float32(scales[row_idx]), Pair(first_sgn, second_sgn))  
+            chunk = Chunk{Vector{Int8}, Float32}(tuple(vals), Float32(scales[i]), signs)  
 
-            qm[i, j] = chunk
+            qm[i, Int(floor(j/4))+1] = chunk
         end
     end
 
-    fully_quantized_matrix = QuantMatrix{UInt16, Float32}(qm, dimension, BLOCKSIZE)
+    fully_quantized_matrix = QuantMatrix{Vector{Int8}, Float32}(qm, dimension, 4)
 
     return fully_quantized_matrix
 end

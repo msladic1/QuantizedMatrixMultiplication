@@ -1,9 +1,9 @@
 # Types Definition
 
 struct Chunk{T, F}
-    values::T
-    scale::F # F generalize it
-    signs::Pair{Int8, Int8} # Store as one byte
+    values::Tuple{T}  
+    scale::F 
+    signs::BitArray 
 end
 
 struct QuantMatrix{T, F} <: AbstractMatrix{T}
@@ -19,17 +19,16 @@ function Base.display(chunk::Chunk{T, F}) where T where F
 end
 
 function Base.display(qm::QuantMatrix{T,F}) where T where F
-    for i in 1:5
-        for j in 1:Int(qm.blocksize/2)
-            hex_str = string(qm.matrix[i, j].values, base=16)
-            print("0x$(lpad(hex_str, 4, '0'))")
+    for i in 1:qm.dim[1]
+        for j in 1:qm.dim[2]
+            print(qm.matrix[i,j].values)
             print("\t")
         end
         println()
     end
 end
 
-Base.size(qm::QuantMatrix) = qm.dim
+Base.size(qm::QuantMatrix) = qm.dim[1], qm.dim[2] 
 
 function Base.getindex(qm::QuantMatrix{T,F}, i, j) where T where F
     return qm.matrix[i, j]

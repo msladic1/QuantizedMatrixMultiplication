@@ -27,7 +27,8 @@ quant_matrix
 scales
 
 # Get QuantMatrix
-qm = pack(quant_matrix, scales, 6)
+qm = pack(quant_matrix, scales, 4)
+size(qm)
 sizeof(qm)
 typeof(qm)
 
