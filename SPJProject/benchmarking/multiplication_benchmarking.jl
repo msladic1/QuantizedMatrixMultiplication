@@ -17,7 +17,7 @@ v = rand(0:20, mat2_size) .|> Float32
 
 quant_matrix, scales = convert_to_quant_matrix(m) 
 
-qm = pack(quant_matrix, scales, 32)
+qm = pack(quant_matrix, scales, 4)
 
 reg = m * v # regular multiplication
 my = qm * v # my multiplication

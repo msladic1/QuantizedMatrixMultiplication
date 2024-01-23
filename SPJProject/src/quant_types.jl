@@ -19,8 +19,8 @@ function Base.display(chunk::Chunk{T, F}) where T where F
 end
 
 function Base.display(qm::QuantMatrix{T,F}) where T where F
-    for i in 1:qm.dim[1]
-        for j in 1:qm.dim[2]
+    for i in 1:min(qm.dim[1], 10)
+        for j in 1:min(qm.dim[2], 10)
             print(qm.matrix[i,j].values)
             print("\t")
         end

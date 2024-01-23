@@ -1,11 +1,8 @@
 include("quant_types.jl")
 include("quant_functions.jl")
 
-function Base.:*(Q::QuantMatrix{UInt16, Float32}, A::Matrix{T}) where T
-    BLOCKSIZE = Q.blocksize
-    BLOCKSIZE2 = Int(BLOCKSIZE/2)
-    NBLOCKS = size(A, 1) ÷ BLOCKSIZE
-    C = zeros(Float32, size(A, 2) , size(A, 2))
+function Base.:*(Q::QuantMatrix{Int8, Float32}, A::Matrix{T}) where T
+    C = zeros(Float32, Q.dim[1] , size(A, 2))
 
     axes_q2 = axes(Q, 2)
     axes_a2 = axes(A, 2)
@@ -13,18 +10,22 @@ function Base.:*(Q::QuantMatrix{UInt16, Float32}, A::Matrix{T}) where T
     @inbounds for i ∈ axes(Q, 1)
         for j ∈ axes_a2
             Cx = zero(eltype(C))
-            or = origin_row_idx(i, NBLOCKS)
+
             shared_scale = Q.matrix[i, 1].scale
+            
+            index = 1
 
             for k ∈ axes_q2
                 v = Q.matrix[i, k].values
-                row = Q.matrix[i, k]
-                oi = origin_col_idx(k, i, NBLOCKS, BLOCKSIZE)
-                Cx += (v >> 8) * A[oi, j] * row.signs[1]         # v[1] * 
-                Cx += (v & 0xFF) * A[oi + BLOCKSIZE2, j] * row.signs[2]
+                chunk = Q.matrix[i, k]
+
+                Cx += v[1] * A[index, j]; index += 1    
+                Cx += v[2] * A[index, j]; index += 1
+                Cx += v[3] * A[index, j]; index += 1
+                Cx += v[4] * A[index, j]; index += 1
             end
 
-            C[or, j] += Cx / 2^6 * shared_scale
+            C[i, j] += Cx / 2^6 * shared_scale
         end
     end
 

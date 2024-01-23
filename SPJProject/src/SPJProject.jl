@@ -32,7 +32,7 @@ size(qm)
 sizeof(qm)
 typeof(qm)
 
-mat2_size = (12, 6)
+mat2_size = (15, 8)
 v = rand(0:20, mat2_size) .|> Float32
 
 qm * v
