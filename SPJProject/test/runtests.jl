@@ -32,19 +32,20 @@ end
 @testset "Test Pack function" begin
     weights2 = initialize_weights(64, 128)
     q, d = convert_to_quant_matrix(weights2)
-    BLOCKSIZE = 32
-    packed = pack(q, d, BLOCKSIZE)
-    @test typeof(packed) == QuantMatrix{UInt16, Float32}
-    @test packed.dim[1] == Int(64*128/BLOCKSIZE) && packed.dim[2] == Int(BLOCKSIZE/2)
-    @test typeof(packed.matrix[1]) == Chunk{UInt16, Float32}
-    @test (packed.matrix[1, 1].values >> 8) * packed.matrix[1, 1].signs[1] == q[1, 1]
-    # @test (packed.matrix[1, 1].values & 0xFF) * packed.matrix[1, 1].signs[2] == q[1, 17]
+    packed = pack(q, d, 4)
+    @test typeof(packed) == QuantMatrix{Int8, Float32}
+    @test packed.dim[1] == Int(64) && packed.dim[2] == Int(32)
+    @test typeof(packed.matrix[1]) == Chunk{Int8, Float32}
+    @test (packed.matrix[1, 1].values[1]) == q[1, 1]
+    @test (packed.matrix[1, 1].values[2]) == q[1, 2]
+    @test (packed.matrix[1, 1].values[3]) == q[1, 3]
+    @test (packed.matrix[1, 1].values[4]) == q[1, 4]
 end
 
 @testset "Multiplication tests" begin
     weights = initialize_weights(12, 24)
     q, d = convert_to_quant_matrix(weights)
-    BLOCKSIZE = 6
+    BLOCKSIZE = 4
     mat2_size = (24, 12)
     v = rand(0:20, mat2_size) .|> Float32
     packed = pack(q, d, BLOCKSIZE)
