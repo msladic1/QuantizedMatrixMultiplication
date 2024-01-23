@@ -3,7 +3,6 @@
 struct Chunk{T, F}
     values::Tuple{T,T,T,T}  
     scale::F 
-    signs::BitArray 
 end
 
 struct QuantMatrix{T, F} <: AbstractMatrix{T}

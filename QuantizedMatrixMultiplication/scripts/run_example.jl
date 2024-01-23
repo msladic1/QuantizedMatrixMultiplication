@@ -1,15 +1,4 @@
-module SPJProject
-
-include("quant_types.jl")
-include("quant_functions.jl")
-include("multiplication.jl")
-
-export convert_to_quant_matrix
-export pack
-export QuantMatrix
-export Chunk
-
-using Random
+using QuantizedMatrixMultiplication
 
 function initialize_weights(rows, cols, scale=Float32(0.01))
     return scale * randn(Float32, rows, cols)
@@ -38,13 +27,11 @@ v = rand(0:20, mat2_size) .|> Float32
 qm * v
 weights * v
 
-qm.matrix[1,1].signs[2]
 qm.blocksize
 
 mat2_size = (128, 64)
 m = initialize_weights(64, 128)
 v = rand(0:20, mat2_size) .|> Float32
-v = initialize_weights(128, 64)
 
 quant_matrix, scales = convert_to_quant_matrix(m) 
 
@@ -58,7 +45,3 @@ qm = pack(quant_matrix, scales, 4)
 qm
 reg = m * v # regular multiplication
 my = qm * v # my multiplication
-
-sum(m*v)
-sum(qm*v)
-end

@@ -47,13 +47,6 @@ function convert_to_quant_matrix(matrix::Matrix{Float32})
     return quantized, scales
 end
 
-function pack(a::Int, b::Int)
-    return UInt16((a << 8) + b)
-end
-
-origin_col_idx(j, i, NBLOCKS, BLOCKSIZE=32) = (mod1(i, NBLOCKS) - 1) * BLOCKSIZE + j
-origin_row_idx(i, NBLOCKS) = fld1(i, NBLOCKS)
-
 function pack(m::Matrix{Int}, scales::Vector{Float32}, BLOCKSIZE=4)
     mat_size = size(m)
 
@@ -64,15 +57,9 @@ function pack(m::Matrix{Int}, scales::Vector{Float32}, BLOCKSIZE=4)
     for i in axes(qm, 1)
         for j in 1:4:mat_size[2]
 
-            signs = BitArray([1, 1, 1, 1])
             vals = Int8[m[i, j], (j + 1 <= size(m, 2)) ? m[i, j + 1] : 0, (j + 2 <= size(m, 2)) ? m[i, j + 2] : 0, (j + 3 <= size(m, 2)) ? m[i, j + 3] : 0]
 
-            #=(m[i, j] < 0) && (vals[1] *= -1; signs[1] = 0)
-            (j + 1 <= size(m, 2) && m[i, j + 1] < 0) && (vals[2] *= -1; signs[2] = 0)
-            (j + 2 <= size(m, 2) && m[i, j + 2] < 0) && (vals[3] *= -1; signs[3] = 0)
-            (j + 3 <= size(m, 2) && m[i, j + 3] < 0) && (vals[4] *= -1; signs[4] = 0)=#
-
-            chunk = Chunk{Int8, Float32}(Tuple(Int8(x) for x in vals), Float32(scales[i]), signs)  
+            chunk = Chunk{Int8, Float32}(Tuple(Int8(x) for x in vals), Float32(scales[i]))  
 
             qm[i, Int(floor(j/4))+1] = chunk
         end

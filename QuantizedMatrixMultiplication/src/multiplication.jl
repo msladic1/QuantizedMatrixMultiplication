@@ -1,4 +1,3 @@
-include("quant_types.jl")
 include("quant_functions.jl")
 
 function Base.:*(Q::QuantMatrix{Int8, Float32}, A::Matrix{T}) where T
