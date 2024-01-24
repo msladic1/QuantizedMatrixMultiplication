@@ -10,7 +10,7 @@ add https://github.com/msladic1/QuantizedMatrixMultiplication.jl
 This project is a first step in introducing multiplication of Quantized Matrix with Regular Float Matrix, in Julia.
 
 The first part of the project consists of turning Float32 matrix to Quantized version. The code of these functions can be found in **quant_functions.jl** file.
-Quantization is based on this [paper.](https://arxiv.org/pdf/2310.10537.pdf)
+Quantization is based on this [paper](https://arxiv.org/pdf/2310.10537.pdf) * *Microscaling Data Formats for Deep Learning* * by Rouhani et. al.
 
 The second part of the project is focused on implementing multiplication of this quantized matrix with regular floating point matrix. This code can be found in **multiplication.jl** file.
 
