@@ -16,7 +16,7 @@ quant_matrix
 scales
 
 # Get QuantMatrix
-qm = pack(quant_matrix, scales, 4)
+qm = pack(quant_matrix, scales)
 size(qm)
 sizeof(qm)
 typeof(qm)
@@ -26,8 +26,6 @@ v = rand(0:20, mat2_size) .|> Float32
 
 qm * v
 weights * v
-
-qm.blocksize
 
 mat2_size = (128, 64)
 m = initialize_weights(64, 128)
@@ -40,8 +38,7 @@ quant_matrix
 v
 scales
 
-qm = pack(quant_matrix, scales, 4)
+qm = pack(quant_matrix, scales)
 
-qm
 reg = m * v # regular multiplication
 my = qm * v # my multiplication

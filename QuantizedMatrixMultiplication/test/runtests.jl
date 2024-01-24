@@ -32,7 +32,7 @@ end
 @testset "Test Pack function" begin
     weights2 = initialize_weights(64, 128)
     q, d = convert_to_quant_matrix(weights2)
-    packed = pack(q, d, 4)
+    packed = pack(q, d)
     @test typeof(packed) == QuantMatrix{Int8, Float32}
     @test packed.dim[1] == Int(64) && packed.dim[2] == Int(32)
     @test typeof(packed.matrix[1]) == Chunk{Int8, Float32}
@@ -45,15 +45,14 @@ end
 @testset "Multiplication tests" begin
     weights = initialize_weights(12, 24)
     q, d = convert_to_quant_matrix(weights)
-    BLOCKSIZE = 4
     mat2_size = (24, 12)
     v = rand(0:20, mat2_size) .|> Float32
-    packed = pack(q, d, BLOCKSIZE)
+    packed = pack(q, d)
     product = packed * v
     real = weights * v
     @test size(product, 1) == 12 && size(product, 2) == 12
     @test sum(real) - sum(product) <= 0.2
-    @test product[2, 4] - real[2, 4] <= 0.02
+    @test product[2, 4] - real[2, 4] <= 0.01
     for i ∈ axes(product, 1)
         for j ∈ axes(product, 2)
             @test product[i, j] - real[i, j] <= 0.01

@@ -47,12 +47,12 @@ function convert_to_quant_matrix(matrix::Matrix{Float32})
     return quantized, scales
 end
 
-function pack(m::Matrix{Int}, scales::Vector{Float32}, BLOCKSIZE=4)
+function pack(m::Matrix{Int}, scales::Vector{Float32})
     mat_size = size(m)
 
-    dimension = Pair(mat_size[1], Int(ceil(mat_size[2] / BLOCKSIZE)))
+    dimension = Pair(mat_size[1], Int(ceil(mat_size[2] / 4)))
 
-    qm = Matrix{Chunk{Int8}}(undef, mat_size[1], Int(ceil(mat_size[2] / BLOCKSIZE)))
+    qm = Matrix{Chunk{Int8}}(undef, mat_size[1], Int(ceil(mat_size[2] / 4)))
 
     for i in axes(qm, 1)
         for j in 1:4:mat_size[2]

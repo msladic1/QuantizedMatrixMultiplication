@@ -8,7 +8,7 @@ end
 struct QuantMatrix{T, F} <: AbstractMatrix{T}
     matrix::Matrix{Chunk{T,F}}
     dim::Pair{Int, Int}
-    blocksize::Int8
+    chunksize::Int8
 end
 
 function Base.display(chunk::Chunk{T, F}) where T where F
