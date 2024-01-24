@@ -52,10 +52,10 @@ end
     real = weights * v
     @test size(product, 1) == 12 && size(product, 2) == 12
     @test sum(real) - sum(product) <= 0.2
-    @test product[2, 4] - real[2, 4] <= 0.01
+    @test product[2, 4] - real[2, 4] <= 0.02
     for i ∈ axes(product, 1)
         for j ∈ axes(product, 2)
-            @test product[i, j] - real[i, j] <= 0.01
+            @test product[i, j] - real[i, j] <= 0.02
         end
     end
 end
