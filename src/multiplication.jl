@@ -16,7 +16,6 @@ function Base.:*(Q::QuantMatrix{Int8, Float32}, A::Matrix{T}) where T
 
             for k ∈ axes_q2
                 v = Q.matrix[i, k].values
-                chunk = Q.matrix[i, k]
 
                 Cx += v[1] * A[index, j]; index += 1    
                 Cx += v[2] * A[index, j]; index += 1

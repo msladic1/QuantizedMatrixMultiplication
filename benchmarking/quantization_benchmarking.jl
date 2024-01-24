@@ -15,11 +15,11 @@ quant_matrix, scales = convert_to_quant_matrix(weights)
 
 # Check for wanrtypes first
 @code_warntype convert_to_quant_matrix(weights)
-@code_warntype pack(quant_matrix, scales, 32)
+@code_warntype pack(quant_matrix, scales)
 
 # Calculate times
 @benchmark convert_to_quant_matrix(weights)
-@benchmark pack(quant_matrix, scales, 32)
+@benchmark pack(quant_matrix, scales)
 
 # Profiling
 Profile.init()
@@ -36,12 +36,12 @@ end
 @profview run_convert(weights,Int(1e5))
 
 Profile.clear()
-@profile pack(quant_matrix, scales, 32)
+@profile pack(quant_matrix, scales)
 Profile.print()
 
 function run_pack(quant_matrix, scales, n)
     for _ in 1:n
-        pack(quant_matrix, scales, 32)
+        pack(quant_matrix, scales)
     end
 end
 
