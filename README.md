@@ -20,8 +20,8 @@ The file **run_example.jl** provides examples of usage also.
 
 To get quantized matrix, two functions need to be called: 
 ```
-* *convert_to_quant_matrix(floatMatrix)* *
-* *pack(quant_matrix, scales)* *
+convert_to_quant_matrix(floatMatrix)
+pack(quant_matrix, scales)
 ```
 Parameters * *quant_matrix* * and * *scales* * are return values of * *convert_to_quant_matrix* * function.
 First function will quantize float values to Int8 precission. 
