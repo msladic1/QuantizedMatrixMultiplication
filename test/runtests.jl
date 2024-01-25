@@ -59,3 +59,20 @@ end
         end
     end
 end
+
+@testset "Multiplication size not divisible by 4 tests" begin
+    weights = initialize_weights(31, 27)
+    q, d = convert_to_quant_matrix(weights)
+    mat2_size = (27, 43)
+    v = rand(0:100, mat2_size) .|> Float32
+    packed = pack(q, d)
+    product = packed * v
+    real = weights * v
+    @test size(product, 1) == 31 && size(product, 2) == 43
+    @test product[2, 4] - real[2, 4] <= 0.1
+    for i ∈ axes(product, 1)
+        for j ∈ axes(product, 2)
+            @test product[i, j] - real[i, j] <= 0.1
+        end
+    end
+end
