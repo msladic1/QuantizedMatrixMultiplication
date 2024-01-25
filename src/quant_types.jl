@@ -14,7 +14,6 @@ end
 function Base.display(chunk::Chunk{T, F}) where T where F
     println(chunk.values)
     println(chunk.scale)
-    println(chunk.signs)
 end
 
 function Base.display(qm::QuantMatrix{T,F}) where T where F
